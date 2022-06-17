@@ -22,13 +22,20 @@ let tweets = [
 ];
 
 server.post("/sign-up", (request, response) => {
-  const newUser = {
-    username: request.body.username,
-    avatar: request.body.avatar,
-  };
+  const verifUser = users.some(
+    (item) => item.username === request.body.username
+  );
+  if (verifUser) {
+    response.send("Já existe esse usuário.");
+  } else {
+    const newUser = {
+      username: request.body.username,
+      avatar: request.body.avatar,
+    };
 
-  users.push(newUser);
-  response.send("OK");
+    users.push(newUser);
+    response.send(users);
+  }
 });
 
 server.post("/tweets", (request, response) => {
@@ -45,13 +52,15 @@ server.get("/tweets", (request, response) => {
   if (tweets.length > 10) {
     const listTweet = tweets.slice(tweets.length - 10, tweets.length);
     const tenTweets = listTweet.map((elem) => {
-      const avatar = users.filter((item) => item.name === elem.username).avatar;
+      const avatar = users.filter((item) => item.username === elem.username)[0]
+        .avatar;
       return { ...elem, avatar: avatar };
     });
     response.send(tenTweets);
   } else {
     const finalTweets = tweets.map((elem) => {
-      const avatar = users.filter((item) => item.name === elem.username).avatar;
+      const avatar = users.filter((item) => item.username === elem.username)[0]
+        .avatar;
       return { ...elem, avatar: avatar };
     });
     response.send(finalTweets);
