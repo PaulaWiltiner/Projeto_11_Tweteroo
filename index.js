@@ -53,10 +53,10 @@ server.post("/sign-up", (request, response) => {
 
 server.post("/tweets", (request, response) => {
   const newTweet = {
-    username: request.headers.username,
+    username: request.headers.user,
     tweet: request.body.tweet,
   };
-  if (request.body.username === "" || request.body.tweet === "") {
+  if (request.body.tweet === "") {
     response.status(400).send("Todos os campos são obrigatórios!");
   } else {
     tweets.push(newTweet);
@@ -65,31 +65,28 @@ server.post("/tweets", (request, response) => {
 });
 
 server.get("/tweets", (request, response) => {
+  const newTweets = [...tweets].reverse();
   const page = request.query.page;
-  if (tweets.length > 10) {
-    if (page !== "" && Number(page) > 1) {
-      const listTweet = tweets.slice(
-        tweets.length - 10 * (page - 1) - 11 < 0
-          ? 0
-          : tweets.length - 10 * (page - 1) - 11,
-        tweets.length - 10 * (page - 1)
-      );
-      const tenTweets = addAvatar(listTweet);
-      response.send(tenTweets);
-    } else {
-      response.status(400).send("Informe uma página válida!");
-    }
+  if (page === "1") {
+    const tenTweets = newTweets.slice(0, 10);
+    response.send(addAvatar(tenTweets));
+  }
+  if (page !== "" && Number(page) > 1) {
+    const listTweet = newTweets.slice(
+      10 * (page - 1),
+      10 * page > newTweets.length ? newTweets.length : 10 * page
+    );
+    response.send(addAvatar(listTweet));
   } else {
-    const finalTweets = addAvatar(tweets);
-    response.send(finalTweets);
+    response.status(400).send("Informe uma página válida!");
   }
 });
 
 server.get("/tweets/:username", (request, response) => {
   const userName = request.params.username;
-  const userNameMatch = tweets.filter((item) => item.username === userName);
-  const userTweets = addAvatar(userNameMatch);
-  response.send(userTweets);
+  const newTweets = [...tweets].reverse();
+  const userNameMatch = newTweets.filter((item) => item.username === userName);
+  response.send(addAvatar(userNameMatch));
 });
 
 server.listen(5000);
